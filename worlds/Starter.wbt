@@ -4,12 +4,14 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/floors/protos/RectangleArena.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/robots/gctronic/e-puck/protos/E-puck.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/factory/containers/protos/WoodenBox.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/obstacles/protos/OilBarrel.proto"
 
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.30746705839704697 0.3339419197720766 0.8910369252840238 1.6035699388381723
-  position -0.3340511427830145 -1.9456822818453703 1.426686105306065
+  orientation 0.23447585251156997 -0.18722290499778227 -0.9539227738308611 4.443452963914858
+  position 0.4979559150791964 -0.8322323191089901 1.01038692468549
 }
 TexturedBackground {
 }
@@ -19,4 +21,14 @@ RectangleArena {
   floorSize 2 2
 }
 E-puck {
+}
+OilBarrel {
+  translation 0.2 0.5 0.05
+  rotation 0 1 0 0
+  height 0.1
+  radius 0.05
+}
+WoodenBox {
+  translation 0 0.5 0.05
+  size 0.2 0.1 0.1
 }
