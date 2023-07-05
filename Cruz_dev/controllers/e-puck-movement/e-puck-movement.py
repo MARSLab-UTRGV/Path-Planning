@@ -57,12 +57,12 @@ left_motor.setVelocity(0.0)
 right_motor.setVelocity(0.0)
 
 # Set target position.
-target_x = round(random.uniform(-0.5, 0.5),2)
-target_z = round(random.uniform(-0.5, 0.5),2)
+target_x = 0.8#round(random.uniform(-0.4, 0.4),2)
+target_z = 0.0#round(random.uniform(-0.4, 0.4),2)
 print("Target Position: ({}, {})".format(target_x, target_z))
 
 #set the desired tolerance
-tolerance = 0.01
+tolerance = 0.055
 
 # Main loop:
 # - Perform simulation steps until Webots is stopping the controller.
@@ -84,6 +84,8 @@ while robot.step(time_step) != -1:
         left_motor.setVelocity(0)
         right_motor.setVelocity(0)
         print("Reached destination")
+        print("Destination: ({},{})".format(target_x,target_z))
+        print("Current: ({},{})".format(current_x,current_z))
         break
         
     # Calculate the desired direction towards the target position
@@ -99,14 +101,15 @@ while robot.step(time_step) != -1:
         diff_direction += 2 * math.pi
         
     # Set the motor velocitied to rotate the e-puck towards the desired direction
-    if diff_direction > 0:
+    if round(diff_direction, 2) > 0:
+        print("rotating left", diff_direction)
         rotate_left()
-    else:
-        rotate_right()
-        
-    if abs(diff_direction) < 0.007:
+    elif round(abs(diff_direction),2 ) < 0.001 or round(abs(diff_direction),1) == 3.1:
+        print("Moving forward")
         move_forward()
+    else:
+        print("rotating right", diff_direction)
+        rotate_right()
  
     
 # Enter here exit cleanup code.
-robot.cleanup()
