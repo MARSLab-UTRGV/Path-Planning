@@ -10,6 +10,10 @@ time_step = int(robot.getBasicTimeStep())
 # Get the Supervisor instance
 supervisor = Supervisor()
 
+# Variables for following the wall
+following_wall = False
+distance_to_goal = float('inf')
+
 # Create Motor devices.
 left_motor = None
 right_motor = None
@@ -22,11 +26,9 @@ position_z = 0.0
 MAX_SPEED = 6.28
 
 # Get the e-puck sensors.
-#ps = []
-#for i in range(8):
-#    ps_name = 'ps{}'.format(i)
-#    ps.append(robot.getDevice(ps_name))
-#    ps[i].enable(time_step)
+ps = [robot.getDevice('ps{}'.format(i)) for i in range(8)]
+for sensor in ps:
+    sensor.enable(time_step)
 
 # Function to set motor velocity to move forward.
 def move_forward():
@@ -47,6 +49,7 @@ def rotate_left():
 def rotate_right():
     left_motor.setVelocity(MAX_SPEED/2)
     right_motor.setVelocity(-MAX_SPEED/2)
+    
 
 # Get a handler to the motors and set target position to infinity (speed control).
 left_motor = robot.getDevice("left wheel motor")
@@ -79,6 +82,27 @@ while robot.step(time_step) != -1:
     # Calculate the distance to the target position
     distance = ((diff_x **2) +  (diff_z **2)) **0.5
     
+    #Determine if the robot has hit an obstacle
+    def hit_obstacle():
+        for sensor in ps:
+            if sensor.getValue() > 1 and distance > tolerance:
+                return True
+        return False
+    
+    #Determine how the robot will follow thre wall
+    def follow_wall():
+        #Find the sensor with the maximum reading
+        max_sensor = max(ps, key=lambda sensor: sensor.getValue())
+        #steer left
+        if max_sensor == 'ps0':
+            return -1
+        #steer right
+        elif max_sensor == 'ps7':
+            return 1
+        #go straight
+        else:
+            return 0
+    
     # Stop the e-puck if it has reached the target position
     if distance < tolerance:
         left_motor.setVelocity(0)
@@ -102,14 +126,22 @@ while robot.step(time_step) != -1:
         
     # Set the motor velocitied to rotate the e-puck towards the desired direction
     if round(diff_direction, 2) > 0:
-        print("rotating left", diff_direction)
+        #print("rotating left", diff_direction)
         rotate_left()
     elif round(abs(diff_direction),2 ) < 0.001 or round(abs(diff_direction),1) == 3.1:
-        print("Moving forward")
+        #print("Moving forward")
         move_forward()
     else:
-        print("rotating right", diff_direction)
+        #print("rotating right", diff_direction)
         rotate_right()
+        
+    # Check if you hit an obstacle
+    if hit_obstacle():
+        print("HIT")
+        following_wall = True
+        
+    
+    
  
     
 # Enter here exit cleanup code.
