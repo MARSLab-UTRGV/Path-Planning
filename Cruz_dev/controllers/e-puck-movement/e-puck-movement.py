@@ -102,15 +102,6 @@ while robot.step(time_step) != -1:
         #go straight
         else:
             return 0
-    
-    # Stop the e-puck if it has reached the target position
-    if distance < tolerance:
-        left_motor.setVelocity(0)
-        right_motor.setVelocity(0)
-        print("Reached destination")
-        print("Destination: ({},{})".format(target_x,target_z))
-        print("Current: ({},{})".format(current_x,current_z))
-        break
         
     # Calculate the desired direction towards the target position
     desired_direction = math.atan2(diff_z, diff_x)
@@ -137,11 +128,36 @@ while robot.step(time_step) != -1:
         
     # Check if you hit an obstacle
     if hit_obstacle():
-        print("HIT")
         following_wall = True
         
+    # Check if the following robot should follow the wall or move towards the goal
+    if following_wall:
+        #Check if the robot can move towards the goal
+        if not hit_obstacle() and distance < distance_to_goal:
+            following_wall = False
+        else:
+            # The robot should follow the wall
+            direction = follow_wall()
+            left_speed = MAX_SPEED if direction >= 0 else -MAX_SPEED
+            right_speed = MAX_SPEED if direction <= 0 else -MAX_SPEED
+    else:
+        # The robot should move towards the goal
+        #Adjust the speed difference based on the angle to the target
+        left_speed = MAX_SPEED
+        right_speed = MAX_SPEED
+        
+    # Set the motor speeds
+    left_motor.setVelocity(left_speed)
+    right_motor.setVelocity(right_speed)
     
-    
- 
+    # Check if target is reached
+    # Stop the e-puck if it has reached the target position
+    if distance < tolerance:
+        left_motor.setVelocity(0)
+        right_motor.setVelocity(0)
+        print("Reached destination")
+        print("Destination: ({},{})".format(target_x,target_z))
+        print("Current: ({},{})".format(current_x,current_z))
+        break
     
 # Enter here exit cleanup code.
