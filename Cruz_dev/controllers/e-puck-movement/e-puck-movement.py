@@ -25,10 +25,12 @@ position_z = 0.0
 # Set E-puck angular speed in rad/s.
 MAX_SPEED = 6.28
 
-# Get the e-puck sensors.
-ps = [robot.getDevice('ps{}'.format(i)) for i in range(8)]
-for sensor in ps:
-    sensor.enable(time_step)
+# Genable proximity sensors.
+ps = []
+for ind in range(8):
+    sensor_name = 'ps' + str(ind)
+    ps.append(robot.getDevice(sensor_name))
+    ps[ind].enable(time_step)
 
 # Function to set motor velocity to move forward.
 def move_forward():
@@ -70,6 +72,10 @@ tolerance = 0.055
 # Main loop:
 # - Perform simulation steps until Webots is stopping the controller.
 while robot.step(time_step) != -1:
+    # Print sensor information
+    for ind in range(8):
+        print("ind: {}, val: {}".format(ind, ps[ind].getValue()))
+    
     # Get the current position of the e-puck
     position = supervisor.getFromDef("epuck").getPosition()
     current_x = position[0]
@@ -85,7 +91,8 @@ while robot.step(time_step) != -1:
     #Determine if the robot has hit an obstacle
     def hit_obstacle():
         for sensor in ps:
-            if sensor.getValue() > 1 and distance > tolerance:
+            if sensor.getValue() > 80 and distance > tolerance:
+                print("Hello there")
                 return True
         return False
     

@@ -25,6 +25,7 @@ DEF epuck E-puck {
   translation -0.8 0 0
   controller "e-puck-movement"
   supervisor TRUE
+  distance_sensor_numberOfRays 8
 }
 WoodenBox {
   translation 0 0 0.1
