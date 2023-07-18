@@ -52,6 +52,30 @@ def rotate_right():
     left_motor.setVelocity(MAX_SPEED/2)
     right_motor.setVelocity(-MAX_SPEED/2)
     
+#Determine if the robot has hit an obstacle
+def hit_obstacle():
+    for sensor in ps:
+        if sensor.getValue() > 80 and distance > tolerance:
+            print("Hello there")
+            return True
+    return False
+    
+#Determine how the robot will follow the wall
+def follow_wall():
+    left_wall = ps[5].getValue() > 80
+    left_corner = ps[6].getValue() > 80
+    front_wall = ps[7].getValue() > 80
+    
+    l_speed = MAX_SPEED
+    r_speed = MAX_SPEED
+    
+    if front_wall:
+        print("turning right")
+        rotate_right()
+    else:
+        if left_wall:
+            print("Driving forward")
+            move_forward()
 
 # Get a handler to the motors and set target position to infinity (speed control).
 left_motor = robot.getDevice("left wheel motor")
@@ -87,28 +111,6 @@ while robot.step(time_step) != -1:
     
     # Calculate the distance to the target position
     distance = ((diff_x **2) +  (diff_z **2)) **0.5
-    
-    #Determine if the robot has hit an obstacle
-    def hit_obstacle():
-        for sensor in ps:
-            if sensor.getValue() > 80 and distance > tolerance:
-                print("Hello there")
-                return True
-        return False
-    
-    #Determine how the robot will follow thre wall
-    def follow_wall():
-        #Find the sensor with the maximum reading
-        max_sensor = max(ps, key=lambda sensor: sensor.getValue())
-        #steer left
-        if max_sensor == 'ps0':
-            return -1
-        #steer right
-        elif max_sensor == 'ps7':
-            return 1
-        #go straight
-        else:
-            return 0
         
     # Calculate the desired direction towards the target position
     desired_direction = math.atan2(diff_z, diff_x)
@@ -122,16 +124,17 @@ while robot.step(time_step) != -1:
     elif diff_direction < -math.pi:
         diff_direction += 2 * math.pi
         
-    # Set the motor velocitied to rotate the e-puck towards the desired direction
-    if round(diff_direction, 2) > 0:
-        #print("rotating left", diff_direction)
-        rotate_left()
-    elif round(abs(diff_direction),2 ) < 0.001 or round(abs(diff_direction),1) == 3.1:
-        #print("Moving forward")
-        move_forward()
-    else:
-        #print("rotating right", diff_direction)
-        rotate_right()
+    def towards_goal():
+        # Set the motor velocitied to rotate the e-puck towards the desired direction
+        if round(diff_direction, 2) > 0:
+            #print("rotating left", diff_direction)
+            rotate_left()
+        elif round(abs(diff_direction),2 ) < 0.001 or round(abs(diff_direction),1) == 3.1:
+            #print("Moving forward")
+            move_forward()
+        else:
+            #print("rotating right", diff_direction)
+            rotate_right()
         
     # Check if you hit an obstacle
     if hit_obstacle():
@@ -142,11 +145,9 @@ while robot.step(time_step) != -1:
         #Check if the robot can move towards the goal
         if not hit_obstacle() and distance < distance_to_goal:
             following_wall = False
+            towards_goal()
         else:
-            # The robot should follow the wall
-            direction = follow_wall()
-            left_speed = MAX_SPEED if direction >= 0 else -MAX_SPEED
-            right_speed = MAX_SPEED if direction <= 0 else -MAX_SPEED
+            follow_wall()
     else:
         # The robot should move towards the goal
         #Adjust the speed difference based on the angle to the target
@@ -154,8 +155,8 @@ while robot.step(time_step) != -1:
         right_speed = MAX_SPEED
         
     # Set the motor speeds
-    left_motor.setVelocity(left_speed)
-    right_motor.setVelocity(right_speed)
+    # left_motor.setVelocity(left_speed)
+    # right_motor.setVelocity(right_speed)
     
     # Check if target is reached
     # Stop the e-puck if it has reached the target position
