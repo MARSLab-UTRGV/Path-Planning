@@ -1,4 +1,5 @@
 import math, random
+from tkinter import Tk
 from controller import Robot, Motor, Supervisor, DistanceSensor
 
 # Create the Robot instance.
@@ -24,6 +25,17 @@ position_y = 0.0
 
 # Set E-puck angular speed in rad/s.
 MAX_SPEED = 6.28
+
+#Global Box Variable
+starting_x = None
+starting_y = None
+start = 0
+firstContact = True
+cleared = True
+looking = False
+extreme_x = None
+extreme_y = None
+minDist = 10000
 
 # Genable proximity sensors.
 ps = []
@@ -70,8 +82,42 @@ def position_difference():
     distance = ((diff_x **2) +  (diff_y **2)) **0.5
     return distance, diff_x, diff_y
     
+# Finds the shortest point to destination around the obstacle
+def circumnavigate():
+    # Getting the global variable to update
+    global start, starting_x, starting_y, cleared, looking, minDist, extreme_x, extreme_y
+    distance, a, b = position_difference()
+    
+    if distance < minDist:
+        extreme_x = current_x
+        extreme_y = current_y
+        minDist = distance
+    
+    #initiates a starting point around the obstacle
+    if start == 0:
+        starting_x = current_x
+        starting_y = current_y
+    elif start == 100:
+        looking = True
+    if looking:
+        if round(current_x, 2) == round(starting_x, 2) and round(current_y, 2) == round(starting_y, 2):
+            cleared = True
+            start = 0
+    print("STARTING LOCATION: ", starting_x, starting_y)
+    print("Extremety: ", extreme_x, extreme_y)
+    start += 1
+   
+# Navigate to the point around the obstacle    
+def toExtremePoint():
+    global looking
+    if round(current_x,2) == round(extreme_x,2) and round(current_y,2) == round(extreme_y,2):
+        looking = False
+
+
+    
 #Determine how the robot will follow the wall
 def follow_wall():
+   
     left_wall = ps[5].getValue() > 80
     left_corner = ps[6].getValue() > 80
     front_wall = ps[7].getValue() > 80
@@ -103,6 +149,7 @@ def follow_wall():
     left_motor.setVelocity(l_speed)
     right_motor.setVelocity(r_speed)
 
+
 # Get a handler to the motors and set target position to infinity (speed control).
 left_motor = robot.getDevice("left wheel motor")
 right_motor = robot.getDevice("right wheel motor")
@@ -113,7 +160,7 @@ right_motor.setVelocity(0.0)
 
 # Set target position.
 target_x = 0.4#round(random.uniform(-0.4, 0.4),2)
-target_y = 0.5#round(random.uniform(-0.4, 0.4),2)
+target_y = 0.0#round(random.uniform(-0.4, 0.4),2)
 print("Target Position: ({}, {})".format(target_x, target_y))
 
 #set the desired tolerance
@@ -158,8 +205,16 @@ while robot.step(time_step) != -1:
             rotate_right()
         
     # Check if you hit an obstacle
-    if hit_obstacle():
+    if hit_obstacle() and firstContact:
+        firstContact = False
+        cleared = False
+    # Will complete a full loop around the obstacle
+    elif not cleared:
+        circumnavigate()
         follow_wall()
+    elif cleared and looking:
+        follow_wall()
+        toExtremePoint()
     else:
         towards_goal()
 
