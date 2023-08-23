@@ -1,5 +1,4 @@
 import math, random
-from tkinter import Tk
 from controller import Robot, Motor, Supervisor, DistanceSensor
 
 # Create the Robot instance.
@@ -94,7 +93,7 @@ def circumnavigate():
         minDist = distance
     
     #initiates a starting point around the obstacle
-    if start == 0:
+    if start <= 1:
         starting_x = current_x
         starting_y = current_y
     elif start == 100:
@@ -185,7 +184,7 @@ while robot.step(time_step) != -1:
     
     # calculate the difference between the desired and the current direction of the e-puck
     diff_direction = desired_direction - supervisor.getFromDef("epuck").getOrientation()[3]
-    
+
     # Adjust the difference to the range (-pi, pi)
     if diff_direction > math.pi:
         diff_direction -= 2 * math.pi
@@ -193,6 +192,9 @@ while robot.step(time_step) != -1:
         diff_direction += 2 * math.pi
         
     def towards_goal():
+        global firstContact
+        if not hit_obstacle():
+            firstContact = True
         # Set the motor velocitied to rotate the e-puck towards the desired direction
         if round(diff_direction, 2) > 0:
             print("rotating left", diff_direction)
@@ -217,11 +219,6 @@ while robot.step(time_step) != -1:
         toExtremePoint()
     else:
         towards_goal()
-
-        
-    # Set the motor speeds
-    # left_motor.setVelocity(left_speed)
-    # right_motor.setVelocity(right_speed)
     
     # Check if target is reached
     # Stop the e-puck if it has reached the target position
