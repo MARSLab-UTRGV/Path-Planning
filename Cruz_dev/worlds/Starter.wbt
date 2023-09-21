@@ -9,8 +9,8 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/project
 WorldInfo {
 }
 Viewpoint {
-  orientation 0.5745434952300852 -0.5720008834870157 -0.5854184498107917 4.196981959873884
-  position 0.025645893917845154 -0.07885959672351368 4.053761513101635
+  orientation 0.4677842966202629 0.2270155569533218 -0.8541907215233957 2.3556338725402846
+  position 0.7772484812395483 1.323958127252774 3.0274384610812377
 }
 TexturedBackground {
 }
@@ -21,11 +21,37 @@ RectangleArena {
   floorSize 2 2
   floorTileSize 0 0
 }
+Solid {
+  translation 0 0 0.0001
+  scale 2 2 2
+  children [
+    Shape {
+      appearance Appearance {
+        texture ImageTexture {
+          url [
+            "textures/white-square-background-56v690fpm25a3o6s.jpg"
+          ]
+        }
+      }
+      geometry Plane {
+      }
+      castShadows FALSE
+    }
+  ]
+}
 DEF epuck E-puck {
   translation -0.8 0 0
   controller "e-puck-movement"
   supervisor TRUE
   distance_sensor_numberOfRays 8
+  groundSensorsSlot [
+    Pen {
+      translation -0.03 0 0
+      rotation 0 0 1 1.57
+      inkColor 0 0.5 0
+      leadSize 0.01
+    }
+  ]
 }
 WoodenBox {
   translation 0 0 0.1
