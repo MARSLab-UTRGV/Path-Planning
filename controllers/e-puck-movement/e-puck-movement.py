@@ -21,6 +21,9 @@ right_motor = None
 # Global position.
 position_x = 0.0
 position_y = 0.0
+start_position = supervisor.getFromDef("epuck").getPosition()
+start_x = start_position[0]
+start_y = start_position[1]
 
 # Set E-puck angular speed in rad/s.
 MAX_SPEED = 6.28
@@ -79,12 +82,14 @@ def position_difference():
 
     # Calculate the distance to the target position
     distance = ((diff_x **2) +  (diff_y **2)) **0.5
+    print("position Difference", distance, diff_x, diff_y)
     return distance, diff_x, diff_y
     
 # Finds the shortest point to destination around the obstacle
 def circumnavigate():
     # Getting the global variable to update
     global start, starting_x, starting_y, cleared, looking, minDist, extreme_x, extreme_y
+    print(start)
     distance, a, b = position_difference()
     
     if distance < minDist:
@@ -99,7 +104,9 @@ def circumnavigate():
     elif start == 100:
         looking = True
     if looking:
+        print("looking.....")
         if round(current_x, 2) == round(starting_x, 2) and round(current_y, 2) == round(starting_y, 2):
+            print("FOUND IT")
             cleared = True
             start = 0
     print("STARTING LOCATION: ", starting_x, starting_y)
@@ -109,10 +116,12 @@ def circumnavigate():
 # Navigate to the point around the obstacle    
 def toExtremePoint():
     global looking
-    if round(current_x,2) == round(extreme_x,2) and round(current_y,2) == round(extreme_y,2):
+    print("going to extreme point.....")
+    print("current location",(round(current_x,2)), round(current_y,2))
+    print("extreme location", (round(extreme_x,2)), round(extreme_y,2))
+    if round(current_x,1) == round(extreme_x,1) and round(current_y,1) == round(extreme_y,1):
+        print("FOUND IT!!!!!!!")
         looking = False
-
-
     
 #Determine how the robot will follow the wall
 def follow_wall():
@@ -163,7 +172,7 @@ target_y = 0.0#round(random.uniform(-0.4, 0.4),2)
 print("Target Position: ({}, {})".format(target_x, target_y))
 
 #set the desired tolerance
-tolerance = 0.055
+tolerance = 0.08
 
 # Main loop:
 # - Perform simulation steps until Webots is stopping the controller.
@@ -176,7 +185,7 @@ while robot.step(time_step) != -1:
     position = supervisor.getFromDef("epuck").getPosition()
     current_x = position[0]
     current_y = position[1]
-        
+    print(current_x, current_y)
     distance, diff_x, diff_y = position_difference()
         
     # Calculate the desired direction towards the target position
@@ -196,6 +205,7 @@ while robot.step(time_step) != -1:
         if not hit_obstacle():
             firstContact = True
         # Set the motor velocitied to rotate the e-puck towards the desired direction
+     
         if round(diff_direction, 2) > 0:
             print("rotating left", diff_direction)
             rotate_left()
@@ -228,6 +238,18 @@ while robot.step(time_step) != -1:
         print("Reached destination")
         print("Destination: ({},{})".format(target_x,target_y))
         print("Current: ({},{})".format(current_x,current_y))
-        break
+        if target_x != start_x or target_y != start_y:
+            print("you are reassigning destinatnion")
+            target_x = start_x
+            target_y = start_y
+            print(current_x, current_y)
+            print(target_x, target_y)
+            rotate_left()
+        else:
+            left_motor.setVelocity(0)
+            right_motor.setVelocity(0)
+            print("You made it back home!")
+            break
+            
     
 # Enter here exit cleanup code.
